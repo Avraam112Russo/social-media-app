@@ -1,0 +1,41 @@
+#spring:
+#  config:
+#    import: .env[.properties]
+#  application:
+#    name: USER-SERVICE
+#  datasource:
+#    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+#    username: ${POSTGRES_USER}
+#    password: ${POSTGRES_PASSWORD}
+#    driver-class-name: org.postgresql.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: validate
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+#        format_sql: true
+#    show-sql: true
+#  liquibase:
+#    enabled: true
+#    drop-first: false
+#    change-log: classpath:db/changelog/db.changelog-master.xml
+##    default-schema: puplic
+#  data:
+#    redis:
+#      host: ${REDIS_HOST}
+#      port: ${REDIS_PORT}
+#
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka
+#  instance:
+#    hostname: localhost
+
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+  application:
+    name: user-serviced

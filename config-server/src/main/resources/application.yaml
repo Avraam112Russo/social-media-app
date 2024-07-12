@@ -1,0 +1,21 @@
+server:
+  port: 8888
+spring:
+  config:
+    import: .env[.properties]
+  application:
+    name: configserver
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/avraam112russo/config-props
+#          force-pull: true # pull the latest code from GIT in case the local repo has some issues and couldn't able to update the repo
+#          skipSslValidation: true # Git Server SSL validation can be disabled
+#          timeout: 10 #HTTP connection timeout (in seconds)
+          username: ${GIT_USERNAME}
+          password: ${GIT_PASSWORD}
+          default-label: main
+
+#encrypt:
+#  key: <your security key go over here>

@@ -1,0 +1,20 @@
+server:
+  port: 9191
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes[0]:
+        id: USER-SERVICED
+        uri: lb://USER-SERVICED
+        predicates: Path=/api/v1/**
+
+
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    hostname: localhost
