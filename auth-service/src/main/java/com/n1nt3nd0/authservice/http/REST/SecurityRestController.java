@@ -7,6 +7,7 @@ import com.n1nt3nd0.authservice.dto.UserRegisterDto;
 import com.n1nt3nd0.authservice.model.UserEntity;
 import com.n1nt3nd0.authservice.security.JwtUtil;
 import com.n1nt3nd0.authservice.service.CustomUserDetailsService;
+import com.n1nt3nd0.authservice.service.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,33 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth-service")
 @RequiredArgsConstructor
 public class SecurityRestController {
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
     private final CustomUserDetailsService customUserDetailsService;
+    private final SecurityService securityService;
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDto dto){
-        try {
-            Authentication authentication =
-                    authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
-            String email = authentication.getName();
-            UserEntity user = UserEntity.builder()
-                    .email(email)
-                    .password(dto.getPassword())
-                    .build();
-            String token = jwtUtil.createToken(user);
-            LoginResponseDto loginRes = LoginResponseDto.builder()
-                    .token(token)
-                    .email(email)
-                    .build();
-            return ResponseEntity.ok(loginRes);
-        } catch (BadCredentialsException e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST,"Invalid username or password");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
-
+        return securityService.login(dto);
     }
 
     @PostMapping("/register")

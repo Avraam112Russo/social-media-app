@@ -22,6 +22,15 @@
             <column name="last_name" type="varchar(64)">
                 <constraints nullable="false"/>
             </column>
+            <column name="confirmation_code" type="varchar(12)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp" >
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="timestamp" >
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
 
