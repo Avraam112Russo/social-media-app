@@ -1,9 +1,6 @@
 package com.n1nt3nd0.authservice.http.REST;
 
-import com.n1nt3nd0.authservice.dto.LoginResponseDto;
-import com.n1nt3nd0.authservice.dto.ErrorResponse;
-import com.n1nt3nd0.authservice.dto.LoginRequestDto;
-import com.n1nt3nd0.authservice.dto.UserRegisterDto;
+import com.n1nt3nd0.authservice.dto.*;
 import com.n1nt3nd0.authservice.model.UserEntity;
 import com.n1nt3nd0.authservice.security.JwtUtil;
 import com.n1nt3nd0.authservice.service.CustomUserDetailsService;
@@ -35,5 +32,10 @@ public class SecurityRestController {
     public ResponseEntity<?> register(@RequestBody UserRegisterDto dto){
         UserEntity user = customUserDetailsService.registerUser(dto);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
+    }
+    @PostMapping("/confirmationCode")
+    public ResponseEntity<?> sendConfirmationCode(@RequestBody ConfirmationCodeDto dto){
+        AuthResponseDto<String> stringAuthResponseDto = customUserDetailsService.sendConfirmationCode(dto);
+        return new ResponseEntity<>(stringAuthResponseDto, HttpStatus.OK);
     }
 }

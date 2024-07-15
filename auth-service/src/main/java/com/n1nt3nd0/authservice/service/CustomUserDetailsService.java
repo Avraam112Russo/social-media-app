@@ -1,5 +1,7 @@
 package com.n1nt3nd0.authservice.service;
 
+import com.n1nt3nd0.authservice.dto.AuthResponseDto;
+import com.n1nt3nd0.authservice.dto.ConfirmationCodeDto;
 import com.n1nt3nd0.authservice.dto.UserRegisterDto;
 import com.n1nt3nd0.authservice.feignClient.EmailServiceFeignClient;
 import com.n1nt3nd0.authservice.feignClient.NotificationDto;
@@ -10,6 +12,7 @@ import com.n1nt3nd0.authservice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -53,6 +56,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             userEntity.setUpdatedAt(LocalDateTime.now());
             userEntity.setConfirmationCode(confirmationCode);
             userEntity.setPassword(passwordEncoder.encode(dto.getPassword()));
+            userEntity.setIsEnabled(false);
             UserEntity savedUser = userRepository.save(userEntity);
             log.info("User saved successfully: {}", savedUser);
             NotificationDto notificationDto = NotificationDto.builder()
@@ -66,6 +70,18 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new RuntimeException("Error while registerUser IN CustomUserDetailsService" + e.getMessage());
         }
 
+    }
+    public AuthResponseDto<String> sendConfirmationCode(ConfirmationCodeDto dto) {
+            UserEntity mayBeUser = userRepository.findByEmail(dto.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found: " + dto.getEmail()));
+            String confirmationCode_saved_account = mayBeUser.getConfirmationCode();
+            if (confirmationCode_saved_account.equals(dto.getConfirmationCode())) {
+                mayBeUser.setIsEnabled(true);
+                userRepository.save(mayBeUser);
+                log.info("user account successfully enabled: {}", mayBeUser);
+                return new AuthResponseDto<>("user account successfully enabled: %s".formatted( mayBeUser ), HttpStatus.OK);
+            }
+            throw new RuntimeException("Confirmation code is incorrect");
     }
     public String getRandomNumberString() {
         // It will generate 6 digit random Number.

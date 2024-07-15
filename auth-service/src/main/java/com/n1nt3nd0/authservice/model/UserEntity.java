@@ -31,6 +31,8 @@ public class UserEntity {
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    @Column(name = "confirmation_code",nullable = true)
+    @Column(name = "confirmation_code", nullable = true)
     private String confirmationCode;
+    @Column(name = "is_enabled")
+    private Boolean isEnabled;
 }
