@@ -5,6 +5,7 @@ import com.n1nt3nd0.authservice.model.UserEntity;
 import com.n1nt3nd0.authservice.security.JwtUtil;
 import com.n1nt3nd0.authservice.service.CustomUserDetailsService;
 import com.n1nt3nd0.authservice.service.SecurityService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,7 +30,7 @@ public class SecurityRestController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody UserRegisterDto dto){
+    public ResponseEntity<?> register(@RequestBody @Valid UserRegisterDto dto){
         UserEntity user = customUserDetailsService.registerUser(dto);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
     }

@@ -6,25 +6,13 @@
 
     <changeSet logicalFilePath="2024-07-09-1-create-table-users"
                id="2024-07-09-1-create-table-users" author="avraam112russo">
-        <createTable tableName="t_users_social_media">
+        <createTable tableName="t_user_service">
             <column name="id" type="bigserial">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="user_info_id" type="bigint">
                 <constraints nullable="false" foreignKeyName="id" references="t_user_information(id)"/>
             </column>
-<!--            <column name="first_name" type="varchar(64)">-->
-<!--                <constraints nullable="false"/>-->
-<!--            </column>-->
-<!--            <column name="last_name" type="varchar(64)">-->
-<!--                <constraints nullable="false"/>-->
-<!--            </column>-->
-<!--            <column name="registration_at" type="date">-->
-<!--                <constraints nullable="false"/>-->
-<!--            </column>-->
-<!--            <column name="birthday" type="DATE">-->
-<!--                <constraints nullable="false"/>-->
-<!--            </column>-->
         </createTable>
     </changeSet>
 

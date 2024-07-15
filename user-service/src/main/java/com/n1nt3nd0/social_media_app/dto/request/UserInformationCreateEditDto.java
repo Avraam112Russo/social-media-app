@@ -37,6 +37,7 @@ public class UserInformationCreateEditDto {
     private String firstName;
     @Size(min = 3, max = 64)
     private String lastName;
+    @Nullable
     @JsonFormat(pattern = "yyyy-MM-dd")
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonSerialize(using = LocalDateSerializer.class)
