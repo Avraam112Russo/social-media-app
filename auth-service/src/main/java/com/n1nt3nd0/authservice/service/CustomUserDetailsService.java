@@ -74,6 +74,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
     }
+    @Transactional
     public AuthResponseDto<String> sendConfirmationCode(ConfirmationCodeDto dto) {
             UserEntity mayBeUser = userRepository.findByEmail(dto.getEmail())
                     .orElseThrow(() -> new UsernameNotFoundException("User not found: " + dto.getEmail()));
