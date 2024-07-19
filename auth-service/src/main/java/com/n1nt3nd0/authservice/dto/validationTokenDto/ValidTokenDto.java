@@ -1,4 +1,4 @@
-package com.n1nt3nd0.authservice.dto;
+package com.n1nt3nd0.authservice.dto.validationTokenDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequestDto {
+@Builder
+public class ValidTokenDto {
     private String email;
-    private String password;
+    private boolean userExist;
 }

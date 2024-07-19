@@ -1,8 +1,8 @@
 package com.n1nt3nd0.authservice.service;
 
-import com.n1nt3nd0.authservice.dto.ErrorResponse;
-import com.n1nt3nd0.authservice.dto.LoginRequestDto;
-import com.n1nt3nd0.authservice.dto.LoginResponseDto;
+import com.n1nt3nd0.authservice.dto.authDto.ErrorResponse;
+import com.n1nt3nd0.authservice.dto.authDto.LoginRequestDto;
+import com.n1nt3nd0.authservice.dto.authDto.LoginResponseDto;
 import com.n1nt3nd0.authservice.model.UserEntity;
 import com.n1nt3nd0.authservice.security.JwtUtil;
 import lombok.RequiredArgsConstructor;

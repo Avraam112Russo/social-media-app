@@ -1,8 +1,8 @@
 package com.n1nt3nd0.authservice.service;
 
-import com.n1nt3nd0.authservice.dto.AuthResponseDto;
-import com.n1nt3nd0.authservice.dto.ConfirmationCodeDto;
-import com.n1nt3nd0.authservice.dto.UserRegisterDto;
+import com.n1nt3nd0.authservice.dto.authDto.AuthResponseDto;
+import com.n1nt3nd0.authservice.dto.authDto.ConfirmationCodeDto;
+import com.n1nt3nd0.authservice.dto.authDto.UserRegisterDto;
 import com.n1nt3nd0.authservice.feignClient.EmailServiceFeignClient;
 import com.n1nt3nd0.authservice.feignClient.NotificationDto;
 import com.n1nt3nd0.authservice.feignClient.ResponseDto;
@@ -46,6 +46,9 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 
+    public boolean userExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
 
     @Transactional
     public UserEntity registerUser(UserRegisterDto dto) {

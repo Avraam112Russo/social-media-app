@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "t_users_social_media")
+@Table(name = "t_user_service")
 public class UserSocialMedia {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -38,8 +38,12 @@ public class UserRestController {
         UserReadDto userReadDto = userService.updateUserById(id, dto);
         return ResponseEntity.ok(userReadDto);
     }
-    @GetMapping("/greeting")
+//    @GetMapping("/greeting")
+//    public ResponseEntity<?> getGreeting(){
+//        return ResponseEntity.ok(greeting);
+//    }
+    @GetMapping("/hello")
     public ResponseEntity<?> getGreeting(){
-        return ResponseEntity.ok(greeting);
+        return ResponseEntity.ok("Hello from user-service.");
     }
 }

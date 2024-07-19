@@ -1,6 +1,8 @@
 package com.n1nt3nd0.authservice.security;
 
+import com.n1nt3nd0.authservice.dto.validationTokenDto.ValidTokenDto;
 import com.n1nt3nd0.authservice.model.UserEntity;
+import com.n1nt3nd0.authservice.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -26,6 +28,7 @@ public class JwtUtil {
     private String issuer;
     @Value("${jwt.expiration}")
     private Integer expirationInSeconds;
+    private CustomUserDetailsService userDetailsService;
     private final String TOKEN_HEADER = "Authorization";
     private final String TOKEN_PREFIX = "Bearer ";
 
@@ -35,6 +38,21 @@ public class JwtUtil {
     public SecretKey getSignInKey(){
         byte[] keyBytes = Decoders.BASE64.decode(secret_key);
         return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public ValidTokenDto validateToken(String bearerToken) {
+        String tokenValue = retrieveToken(bearerToken);
+        Claims claimsFromToken = getClaimsFromToken(tokenValue);
+        String emailFromClaims = getEmailFromClaims(claimsFromToken);
+        boolean userExist = userDetailsService.userExists(emailFromClaims);
+        boolean validateExpirationDate = validateClaimsExpirationDate(claimsFromToken);
+        if (userExist && validateExpirationDate) {
+            return ValidTokenDto.builder()
+                    .userExist(true)
+                    .email(emailFromClaims)
+                    .build();
+        }
+        throw new RuntimeException("Invalid token");
     }
 
     public String createToken(UserEntity user) {
@@ -78,6 +96,12 @@ public class JwtUtil {
             return bearerToken.substring(TOKEN_PREFIX.length());
         }
         return null;
+    }
+    public String retrieveToken(String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
+            return bearerToken.substring(TOKEN_PREFIX.length());
+        }
+        throw new RuntimeException("Error while retrieving token value IN retrieveToken");
     }
 
     public boolean validateClaimsExpirationDate(Claims claims) throws AuthenticationException {

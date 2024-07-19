@@ -1,4 +1,7 @@
+#  spring.main.allow-circular-references
 spring:
+  main:
+    allow-circular-references: true
   cloud:
     config:
       uri: http://localhost:8888

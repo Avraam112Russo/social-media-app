@@ -11,7 +11,7 @@
                 <constraints nullable="false" primaryKey="true"/>
             </column>
             <column name="user_info_id" type="bigint">
-                <constraints nullable="false" foreignKeyName="id" references="t_user_information(id)"/>
+                <constraints nullable="false" foreignKeyName="id" references="t_user_information_user_service(id)"/>
             </column>
         </createTable>
     </changeSet>
