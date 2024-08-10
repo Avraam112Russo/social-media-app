@@ -1,11 +1,13 @@
 package com.n1nt3nd0.authservice.service;
 
+import com.n1nt3nd0.authservice.dto.RegisterMessageDto;
 import com.n1nt3nd0.authservice.dto.authDto.AuthResponseDto;
 import com.n1nt3nd0.authservice.dto.authDto.ConfirmationCodeDto;
 import com.n1nt3nd0.authservice.dto.authDto.UserRegisterDto;
 import com.n1nt3nd0.authservice.feignClient.EmailServiceFeignClient;
 import com.n1nt3nd0.authservice.feignClient.NotificationDto;
 import com.n1nt3nd0.authservice.feignClient.ResponseDto;
+import com.n1nt3nd0.authservice.kafka.KafkaMessageProducer;
 import com.n1nt3nd0.authservice.mapper.UserMapper;
 import com.n1nt3nd0.authservice.model.UserEntity;
 import com.n1nt3nd0.authservice.repository.UserRepository;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final KafkaMessageProducer kafkaMessageProducer;
     @Autowired
     private EmailServiceFeignClient feignClient;
     @Override
@@ -82,6 +86,14 @@ public class CustomUserDetailsService implements UserDetailsService {
             if (confirmationCode_saved_account.equals(dto.getConfirmationCode())) {
                 mayBeUser.setIsEnabled(true);
                 userRepository.save(mayBeUser);
+                kafkaMessageProducer.sendMessage(
+                        RegisterMessageDto.builder()
+                                .id(UUID.randomUUID().toString())
+                                .email(mayBeUser.getEmail())
+                                .firstName(mayBeUser.getFirstName())
+                                .lastName(mayBeUser.getLastName())
+                                .build()
+                );
                 log.info("user account successfully enabled: {}", mayBeUser);
                 return new AuthResponseDto<>("user account successfully enabled: %s".formatted( mayBeUser ), HttpStatus.OK);
             }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
+
+    <changeSet logicalFilePath="2024-07-09-2-create-table-video-service"
+               id="2024-07-09-2-create-table-video-service" author="avraam112russo">
+        <createTable tableName="t_video_service">
+            <column name="id" type="bigserial">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="video_owner_email" type="varchar(264)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="video_name" type="varchar(128)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(512)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="url" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

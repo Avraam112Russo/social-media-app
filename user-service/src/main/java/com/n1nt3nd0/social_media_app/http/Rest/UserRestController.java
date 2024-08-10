@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/user-service")
-@RefreshScope // host_application:port_application/actuator/refresh POST method
+//@RefreshScope // host_application:port_application/actuator/refresh POST method
 public class UserRestController {
     private final UserService userService;
     @Value("${greeting}")

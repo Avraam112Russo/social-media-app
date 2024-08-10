@@ -23,9 +23,9 @@ public class GateWayConfig {
                         .filters(f -> f.filter(filter))
                         .uri("lb://user-serviced"))
 
-//                .route("auth-service", r -> r.path("/auth/**")
-//                        .filters(f -> f.filter(filter))
-//                        .uri("lb://auth-service"))
+                .route("video-service", r -> r.path("/api/video-service/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://video-service"))
                 .build();
     }
 }
