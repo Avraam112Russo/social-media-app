@@ -26,11 +26,13 @@ public class VideoRestControllerV01 {
         if (desc == null){
             desc = "Default description";
         }
-        videoService.downloadNewVideo(email, videoName, desc, multipartFile);
+        videoService.saveNewVideoFileToDataBase(email, videoName, desc, multipartFile);
         return new ResponseEntity<>(HttpStatus.OK);
     }
     @GetMapping("/video")
-    public ResponseEntity<StreamingResponseBody> getVideoById(@RequestParam Long id) throws IOException {
-        return videoService.getVideoFromGoogleCloudById(id);
+    public ResponseEntity<StreamingResponseBody> getVideoById(
+            @RequestParam Long id,
+            @RequestHeader(value = "Range", required = false) String rangeHeader) throws IOException {
+        return videoService.getVideoFromGoogleCloudById(id, rangeHeader);
     }
 }

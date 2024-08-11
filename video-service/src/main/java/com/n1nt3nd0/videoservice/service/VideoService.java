@@ -5,17 +5,15 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.Storage;
-import com.google.common.io.ByteStreams;
-import com.n1nt3nd0.videoservice.model.VideoFile;
+import com.n1nt3nd0.videoservice.exception.DownloadVideoFromGcsException;
+import com.n1nt3nd0.videoservice.entity.VideoFile;
 import com.n1nt3nd0.videoservice.repository.VideoFileRepository;
-import com.n1nt3nd0.videoservice.util.DataBucketUtil;
-import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,14 +23,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -41,46 +31,15 @@ import java.util.UUID;
 public class VideoService {
 
     private final VideoFileRepository videoFileRepository;
-    private final DataBucketUtil dataBucketUtil;
     private final Bucket bucket;
     private final Storage storage;
-//    public List<VideoFile> uploadFiles(MultipartFile[] files) {
-//        log.info("Start file uploading service.");
-//        List<VideoFile> videoFiles = new ArrayList<>();
-//
-//        Arrays.asList(files).forEach(file -> {
-//            String originalFileNAme = file.getOriginalFilename();
-//            if (originalFileNAme == null){
-//                throw new BadRequestException("Original video-file name is null.");
-//            }
-//            Path path = new File(originalFileNAme).toPath();
-//            try {
-//                String contentType = Files.probeContentType(path);
-//                FileDto fileDto = dataBucketUtil.uploadFile(file, originalFileNAme, contentType);
-//                if (fileDto != null){
-//                    videoFiles.add(VideoFile.builder()
-//                                    .fileName(fileDto.getName())
-//                                    .url(fileDto.getMediaLink())
-//                            .build());
-//                    log.info("File uploaded successfully, file name: {} and file URL: {}", fileDto.getName(), fileDto.getMediaLink());
-//                }
-//
-//            }catch (Exception e){
-//                log.error("Error while uploaded file IN FileService: {}", e.getMessage());
-//                throw new RuntimeException("Error while uploaded file IN FileService");
-//            }
-//        });
-//        videoFileRepository.saveAll(videoFiles);
-//        log.info("File details successfully saved in database");
-//        return videoFiles;
-//    }
 
-    public void downloadNewVideo(String email,
-                                   String videoName,
-                                   String videoDesc,
-                                   MultipartFile multipartFile) {
+    public void saveNewVideoFileToDataBase(String email,
+                                           String videoName,
+                                           String videoDesc,
+                                           MultipartFile multipartFile) {
         try {
-            String url = saveVideoInGoogleCloud(multipartFile);
+            String url = uploadVideoInGoogleCloud(multipartFile);
             VideoFile build = VideoFile.builder()
                     .videoName(videoName)
                     .description(videoDesc)
@@ -97,7 +56,7 @@ public class VideoService {
 
     }
 
-    private String saveVideoInGoogleCloud(MultipartFile multipartFile) {
+    private String uploadVideoInGoogleCloud(MultipartFile multipartFile) {
         try {
             byte[] videoFilesAsBytesArray = FileUtils.readFileToByteArray(converted(multipartFile));
             String videoFileUrl = UUID.randomUUID().toString();
@@ -111,29 +70,83 @@ public class VideoService {
         }
     }
 
-    public ResponseEntity<StreamingResponseBody> getVideoFromGoogleCloudById(Long id) throws IOException {
-
-        VideoFile videoFile = videoFileRepository.findById(id).orElseThrow(() -> new NotFoundException("Video %s not found.".formatted(id)));
+    public ResponseEntity<StreamingResponseBody> getVideoFromGoogleCloudById(Long id, String rangeHeader) throws IOException {
+        VideoFile videoFile = videoFileRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Video %s not found.".formatted(id)));
         String url = videoFile.getUrl();
         Blob blob = storage.get(BlobId.of(bucket.getName(), url));
         if (blob == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        StreamingResponseBody responseBody = outputStream -> {
-            try (ReadChannel reader = blob.reader()) {
-                byte[] buffer = new byte[1024];
-                int limit;
-                while ((limit = reader.read(ByteBuffer.wrap(buffer))) >= 0) {
-                    outputStream.write(buffer, 0, limit);
-                }
-            }catch (Exception e){
-                throw new RuntimeException("Error while read blob IN getVideoFromGoogleCloudById");
-            }
-        };
+        StreamingResponseBody responseStream;
+        final HttpHeaders responseHeaders = new HttpHeaders();
+        try {
 
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("video/mp4"))
-                .body(responseBody);
+            if (rangeHeader == null){
+                responseHeaders.add("Content-Type", "video/mp4");
+                responseHeaders.add("Content-Length", blob.getSize().toString());
+
+                responseStream = outputStream -> {
+                    long position = 0;
+                    try (ReadChannel reader = blob.reader()) {
+                        reader.seek(position);
+                        ByteBuffer bytes = ByteBuffer.allocate(1024 * 16);
+                        while (reader.read(bytes) > 0) {
+                            bytes.flip();
+                            outputStream.write(bytes.array());
+                            bytes.clear();
+                        }
+                        outputStream.flush();
+                    }
+
+
+                };
+                return new ResponseEntity<StreamingResponseBody>
+                        (responseStream, responseHeaders, HttpStatus.OK);
+            }
+
+
+            String[] ranges = rangeHeader.split("-");
+            Long rangeStart = Long.parseLong(ranges[0].substring(6));
+            Long rangeEnd;
+            if (ranges.length > 1) {
+                rangeEnd = Long.parseLong(ranges[1]);
+            }
+            else {
+                rangeEnd = blob.getSize() - 1;
+            }
+
+            if (blob.getSize() < rangeEnd) {
+                rangeEnd = blob.getSize() - 1;
+            }
+
+            String contentLength = String.valueOf((rangeEnd - rangeStart) + 1);
+            responseHeaders.add("Content-Type", "video/mp4");
+            responseHeaders.add("Content-Length", contentLength);
+            responseHeaders.add("Accept-Ranges", "bytes");
+            responseHeaders.add("Content-Range", "bytes" + " " +
+                    rangeStart + "-" + rangeEnd + "/" + blob.getSize());
+            final Long _rangeEnd = rangeEnd;
+            responseStream = outputStream -> {
+                long position = rangeStart;
+                try (ReadChannel reader = blob.reader()) {
+                    reader.seek(position);
+                    ByteBuffer bytes = ByteBuffer.allocate(1024 * 16);
+                    while (reader.read(bytes) > 0) {
+                        bytes.flip();
+                        outputStream.write(bytes.array());
+                        bytes.clear();
+                    }
+                    outputStream.flush();
+                }
+            };
+
+            return new ResponseEntity<StreamingResponseBody>
+                    (responseStream, responseHeaders, HttpStatus.PARTIAL_CONTENT);
+        }catch (Exception e){
+            log.error("Error while getVideo IN Video Service");
+            throw new DownloadVideoFromGcsException("Error while getVideo IN Video Service", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private File converted(MultipartFile multipartFile) {

@@ -28,57 +28,9 @@ import java.util.List;
 //
 @Component
 public class JwtUtil {
-//    @Value("${jwt.secret}")
     private final String secret_key = "b5f59337a612a2a7dc07328f3e7d1a04722967c7f06df20a499a7d3f91ff2a7e";
-//    @Value("${jwt.issuer}")
-//    private String issuer;
-//    @Value("${jwt.expiration}")
-//    private Integer expirationInSeconds;
     private final String TOKEN_HEADER = "Authorization";
     private final String TOKEN_PREFIX = "Bearer ";
-//
-//
-//
-//
-//    public SecretKey getSignInKey(){
-//        byte[] keyBytes = Decoders.BASE64.decode(secret_key);
-//        return Keys.hmacShaKeyFor(keyBytes);
-//    }
-//
-//    public ValidTokenDto validateToken(String bearerToken) {
-//        String tokenValue = retrieveToken(bearerToken);
-//        Claims claimsFromToken = getClaimsFromToken(tokenValue);
-//        String emailFromClaims = getEmailFromClaims(claimsFromToken);
-//        boolean userExist = userDetailsService.userExists(emailFromClaims);
-//        boolean validateExpirationDate = validateClaimsExpirationDate(claimsFromToken);
-//        if (userExist && validateExpirationDate) {
-//            return ValidTokenDto.builder()
-//                    .userExist(true)
-//                    .email(emailFromClaims)
-//                    .build();
-//        }
-//        throw new RuntimeException("Invalid token");
-//    }
-//
-//    public String createToken(UserEntity user) {
-//        Map<String, String> claims = new HashMap<>(){{
-//            put("email", user.getEmail()); // claims body
-//        }};
-//        Long expirationDateInMillis = expirationInSeconds * 1000L;
-//        Date expirationDate = new Date(new Date().getTime() + expirationDateInMillis);
-//        Date createdAt = new Date();
-//
-//        return Jwts.builder()
-//                .claims(claims)
-//                .issuer(issuer) // avraam112russo
-//                .subject(user.getFirstName()) // userID
-//                .issuedAt(createdAt)
-//                .id(UUID.randomUUID().toString())
-//                .expiration(expirationDate)
-//                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
-//                .compact();
-//
-//    }
 
 
     private Claims retrieveClaimsFromToken(ServerHttpRequest req) {
@@ -101,23 +53,9 @@ public class JwtUtil {
         if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
             return bearerToken.substring(TOKEN_PREFIX.length());
         }
-        return null;
+        throw new RuntimeException("Bearer token in header Authorization not found");
     }
-//    public String retrieveToken(String bearerToken) {
-//        if (bearerToken != null && bearerToken.startsWith(TOKEN_PREFIX)) {
-//            return bearerToken.substring(TOKEN_PREFIX.length());
-//        }
-//        throw new RuntimeException("Error while retrieving token value IN retrieveToken");
-//    }
-//
-//    public boolean validateClaimsExpirationDate(Claims claims) throws AuthenticationException {
-//        try {
-//            return claims.getExpiration().after(new Date());
-//        } catch (Exception e) {
-//            throw e;
-//        }
-//    }
-//
+
     private Claims getClaimsFromToken(String token){
         byte[] keyBytes = Decoders.BASE64.decode(secret_key);
         SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);

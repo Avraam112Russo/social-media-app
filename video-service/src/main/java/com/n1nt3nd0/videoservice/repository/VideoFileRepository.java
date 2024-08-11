@@ -1,6 +1,6 @@
 package com.n1nt3nd0.videoservice.repository;
 
-import com.n1nt3nd0.videoservice.model.VideoFile;
+import com.n1nt3nd0.videoservice.entity.VideoFile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
